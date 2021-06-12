@@ -40,6 +40,17 @@ Gmail だけでなく、メール転送設定できるメールサービスで�
 
 ## LINE
 
+[LINE Developers](https://developers.line.biz/ja/) で、**Messaging API** のチャンネルを作成します。
+
+チャンネルを作成したら、下記項目をコピーしておきます。
+
+- Basic settings メニューの **Channel secret**
+- Messaging API Settings メニューの **Channel access token (long-lived)**
+
+また、**Messaging API settings** メニューの **QR code** を利用して、このチャンネルと友だちになっておきます。
+
+![](./img/line000.png)
+
 ## Amazon Route53 (ドメイン取得)
 (※すでに独自ドメインを持っている場合は、このステップは飛ばします)
 
