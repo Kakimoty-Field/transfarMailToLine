@@ -1,5 +1,10 @@
+### 更新履歴
+- 2022/01/05 Lambda を作成するリージョンについて追記
+
+# 目次
 <!-- code_chunk_output -->
 
+- [目次](#目次)
 - [作るもの](#作るもの)
   - [前提条件](#前提条件)
 - [背景](#背景)
@@ -31,6 +36,7 @@
     - [環境変数設定](#環境変数設定)
     - [トリガー追加](#トリガー追加)
     - [テスト](#テスト)
+    - [応用](#応用)
 
 <!-- /code_chunk_output -->
 
@@ -38,7 +44,9 @@
 # 作るもの
 構成図は以下の通りです。
 
-![構成図](./img/000.png)
+構成図では、メールサービスが **Gmail** になっていますが、転送設定できるメールサービスであればどんなメールサービスでも LINE に転送できます。
+
+![構成図](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/000.png)
 
 1. LINE に通知したいメールサービスで、AmazonSES に対してメール転送設定します
 1. AmazonSES のメールアドレスは Amazon Route 53 で解決されます。
@@ -82,7 +90,7 @@ Gmail だけでなく、メール転送設定できるメールサービスで�
 
 また、**Messaging API settings** メニューの **QR code** を利用して、このチャンネルと友だちになっておきます。
 
-![](./img/line000.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/line000.png)
 
 ## Amazon Route53 (ドメイン取得)
 (※すでに独自ドメインを持っている場合は、このステップは飛ばします)
@@ -91,7 +99,7 @@ Gmail だけでなく、メール転送設定できるメールサービスで�
 AWSマネージメントコンソール から **Amazon Route53** を選択し「ドメインの登録」ボタンをクリックしウィザードを開始します。  
 
 **ドメイン名の選択** 画面で、利用したいドメイン名の入力とトップレベルドメインを選択します。
-![](./img/aws-route53/100.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-route53/100.png)
 
 **利用可能**であれば、「カートに入れる」ボタンをクリックし、画面最下部の「続行」ボタンをクリックします。
 
@@ -100,16 +108,16 @@ AWSマネージメントコンソール から **Amazon Route53** を選択し�
 
 すべての情報が入力し終わったら画面最下部の「続行」ボタンをクリックします。
 
-![](./img/aws-route53/110.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-route53/110.png)
 
 **連絡先の詳細確認** 画面で、前画面で入力した情報の内容を確認します。また、「１年毎のドメイン自動更新」を有効にするかどうかを設定できるので、適切に設定します。
 
 確認が完了したら画面最下部の「注文を完了」ボタンをクリックします。
-![](./img/aws-route53/120.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-route53/120.png)
 
 **AWSクレジット** を保有している場合、下記のダイアログが表示されます。ドメイン登録にかかる費用はAWSクレジットは利用できず、実費が請求されます。内容を確認したうえで「注文を完了」ボタンをクリックします。
 
-![](./img/aws-route53/130.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-route53/130.png)
 
 Route 53 ダッシュボードの **通知** 欄に、ドメイン登録の進捗状況が表示されます。ドメインが利用可能になるまで３０分前後かかるかと思います。
 
@@ -117,9 +125,10 @@ Route 53 ダッシュボードの **通知** 欄に、ドメイン登録の進�
 (※SES の設定は2021年5月上旬に試したため、旧コンソールに誘導されました。旧画面のスクショでの手順となります。)
 
 ### リージョンの選択
-**AmazonSES でメールを受信できるリージョンは限定されています。** 執筆当時は以下のリージョンのみ対応していました。
+**AmazonSES でメールを受信できるリージョンは限定されています。** 
 
 下記リージョンのいずれかを選択して作業します。
+
 | リージョン名 | リージョン   |
 | --- | --- |
 | US East (N. Virginia)| us-east-1 |
@@ -133,15 +142,15 @@ Amazon SES で 自分のドメインを利用できるように Identity を作�
 
 そのあと、画面上部の「Verify a New Domain」ボタンをクリックします。(図内②)
 
-![](./img/aws-ses/100.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/100.png)
 
 **Verify a New Domain** ダイアログが表示されるので、メールアドレスとして利用するドメインを入力して「Verify This Domain」ボタンをクリックします。
 
-![](./img/aws-ses/110.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/110.png)
 
 Route 53 を利用して `MXレコード` を登録するかどうか確認して「Use Route 53」ボタンをクリックします。
 
-![](./img/aws-ses/120.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/120.png)
 
 しばらく待つと、登録した `Domain Identity` の Verification Status が **verified** になります。
 
@@ -153,13 +162,13 @@ Amazon SES でメールを受信し、受信したメールを Amazon S3 に保�
 画面左ペインの **Email Receiving** 内の **Rule Sets** をクリックします。（図内①）
 
 そのあと、画面上部の「Create a Receipt Rule」ボタンをクリックします。(図内②)
-![](./img/aws-ses/130.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/130.png)
 
 メールボックスに相当するものを作成します。ここで何も入力しないと、サブドメインを含めたありとあらゆるユーザに対してのメールを受信することになりますので、転送先として適切なメールアドレスを作成しておきます。
 
 下記例では、`test-mail@ドメイン名` というメールアドレスを有効にしています。
 
-![](./img/aws-ses/140.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/140.png)
 
 メールアドレスを入力したら画面下部の「Next Step」ボタンをクリックします。
 
@@ -168,28 +177,34 @@ Amazon SES でメールを受信し、受信したメールを Amazon S3 に保�
 
 **Add action** メニューの `<Select an action type>` で `S3` を選択します。
 
-![](./img/aws-ses/150.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/150.png)
 
 **Amazon S3** の設定をする画面に切り替わるので **S3 bucket** メニュをクリックし `Create S3 bucket` を選択します。
 (既存のバケットを利用したい場合、ドロップダウンリストの下部に利用可能なバケットがリストされているので、そちらを選択してください。)
 
-![](./img/aws-ses/160.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/160.png)
 
 `Create S3 bucket` を選択すると**Create New Bucket** ダイアログが表示されるので、世界でユニークとなる名前を付けて「Create Bucket」ボタンをクリックします。
 
-![](./img/aws-ses/170.png)
+:::note info
+Amazon SES を利用しているリージョンに S3バゲットが作成されます
+:::
+
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/170.png)
+
+
 
 続いて **Object key prefix** に、受信したメールを格納するフォルダを入力します。
 入力がおわったら画面下部の「Next Stop」ボタンをクリックします。
-![](./img/aws-ses/180.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/180.png)
 
 **Rule Details**画面で、**Rule name** を入力して、「Next Step」ボタンをクリックします。
 
-![](./img/aws-ses/190.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/190.png)
 
 **Review**画面では、いままで入力した設定内容を確認します。確認が終わったら「Create Rule」ボタンをクリックします。
 
-![](./img/aws-ses/200.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/200.png)
 
 #### 動作確認
 正しくメールを受信し、S3にメールが保存されるかどうかを確認します。
@@ -198,14 +213,14 @@ Amazon SES でメールを受信し、受信したメールを Amazon S3 に保�
 
 これまでの設定が正しい場合、メールを送信すると[S3 への保存設定](#s3-への保存設定)で設定したバケット内のフォルダにオブジェクトが作成されます。
 
-![](./img/aws-ses/210.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/aws-ses/210.png)
 
 ## Amazon S3
 この仕組みを運用していくとバケット内にオブジェクトが増え続けます。メールをＬＩＮＥに通知したらオブジェクトが不要となるので、自動でオブジェクトが削除されるように設定してコスト削減を図ります。
 
 ### ライフサイクルルール作成
 Amazon S3 の該当バケットを選択し、**管理**タブをクリックしたあと「ライフサイクルルールを作成する」ボタンをクリックします。
-![](./img/S3/100.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/S3/100.png)
 
 下記の設定をして、オブジェクトが作成された翌日に削除されるようにします。
 
@@ -216,7 +231,7 @@ Amazon S3 の該当バケットを選択し、**管理**タブをクリックし
 1. 「保存」ボタンをクリックします。
 
 
-![](./img/S3/110.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/S3/110.png)
 
 ## AWS Lambda
 ### モジュールレイヤーの作成
@@ -300,14 +315,18 @@ AWS マネージドコンソールで、作成されたレイヤーを確認し�
 
 **AWS Lambda** コンソールの左ペインから **その他のリソース**→**レイヤー**をクリックします。
 
-![](./img/lambda/230.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/230.png)
 
 ２つのレイヤーが作成されていることを確認します。
 
 ### Lambda 関数作成
 
-**AWS Lambda** コンソール右上の「関数の作成」ボタンをクリックします。
-![](./img/lambda/300.png)
+:::note warn
+lambda は、S3 と同じリージョンで作成する必要があります。
+:::
+
+**AWS Lambda** ダッシュボード右上の「関数の作成」ボタンをクリックします。
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/300.png)
 
 
 **関数の作成** 画面では、以下の項目を設定します。
@@ -318,15 +337,15 @@ AWS マネージドコンソールで、作成されたレイヤーを確認し�
 
 設定が完了したら、画面下部の「関数の作成」ボタンをクリックします。
 
-![](./img/lambda/310.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/310.png)
 
 **lambda 関数設定画面**の最下部、 **レイヤー** グループの「レイヤーの追加」ボタンをクリックします。
 
-![](./img/lambda/320.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/320.png)
 
 **レイヤーを追加**画面では、`カスタムレイヤー`を選択し、ドロップダウンリストから `line-bot` と `mailperser` を追加します。(２つのレイヤーを追加する際は、1つ目のレイヤーを選んだあと、「追加」ボタンをクリックして改めて2つ目のレイヤーを追加します。)
 
-![](./img/lambda/330.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/330.png)
 
 ### ソースコードデプロイ
 
@@ -395,18 +414,18 @@ LINE にメッセージを送信するためのアクセストークンとチャ
 | LINE_CHANNEL_ACCESS_TOKEN | アクセストークン |
 | LINE_CHANNEL_SECRET | チャンネルシークレット |
 
-![](./img/lambda/100.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/100.png)
 
 ### トリガー追加
 
 Amazon S3 にオブジェクトが作成されたら Lambda 関数が実行されるように設定します。
 
 画面上部の **関数の概要**から「＋トリガーを追加」ボタンをクリックします。
-![](./img/lambda/200.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/200.png)
 
 **トリガーを追加**画面の、**トリガーを設定**ドロップダウンボックスに `S3` と入力すると リスト内にＳ３が表示されるので選択します。
 
-![](./img/lambda/210.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/210.png)
 
 **トリガーの設定** 画面では、以下の項目を設定します。
 
@@ -417,13 +436,13 @@ Amazon S3 にオブジェクトが作成されたら Lambda 関数が実行さ�
 
 設定が完了したら、画面最下部の「追加」ボタンをクリックします。
 
-![](./img/lambda/220.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/220.png)
 
 ### テスト
 
 [SES でのメール受信動作確認](#動作確認) で作成されたオブジェクトを、名前を変えてS3バケットに保存してみましょう。 Lambda 関数が正しく実行されると、LINE に通知が送信されます。
 
-![](./img/lambda/900.png)
+![](https://raw.githubusercontent.com/Kakimoty-Field/transfarMailToLine/master/img/lambda/900.png)
 
 ### 応用
 Lambda 関数ソースコード内でメール件名や本文をチェックして、ルールに当てはまるメールだけをLINE に通知するという機能を作ることも可能かと思います。
